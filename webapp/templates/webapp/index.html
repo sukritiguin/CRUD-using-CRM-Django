@@ -1,0 +1,45 @@
+{% extends "webapp/base.html" %}
+
+
+{% block content %}
+<style>
+    /* Custom CSS for styling */
+    body {
+        background-color: #f4f4f4;
+    }
+    .container-margin {
+        text-align: center;
+        margin-top: 100px;
+    }
+    h1 {
+        font-size: 36px;
+        color: #333;
+    }
+    p {
+        font-size: 20px;
+        color: #666;
+        margin-bottom: 30px;
+    }
+    .btn-create-account {
+        padding: 15px 30px;
+        font-size: 24px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+    .btn-create-account:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="container container-margin">
+    <h1>Welcome to Tiny CRM</h1>
+    <p>Managing Big Hearts, One Tiny CRM at a Time</p>
+    <a href="{% url 'register'%}" class="btn btn-primary btn-lg">Create Account</a>
+</div>
+
+{% endblock content %}
