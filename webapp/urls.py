@@ -11,4 +11,6 @@ urlpatterns = [
     path('dashboard/', views.DashboardPage, name='dashboard'),
     path('create-record/', views.CreateRecordPage, name='create-record'),
     path('update-record/<int:pk>/', views.UpdateRecordPage, name='update-record'),
+    path('view-record/<int:pk>/', views.ViewRecordPage, name='view-record'),
+    path('delete-record/<int:pk>/', views.DeleteRecordPage, name='delete-record'),
 ]

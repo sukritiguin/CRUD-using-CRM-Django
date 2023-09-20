@@ -9,6 +9,8 @@ from .forms import CreateUserForm, LoginForm, CreateRecordForm, UpdateRecordForm
 from django.contrib.messages import success
 from . models import Record
 
+from django.contrib import messages
+
 # Create your views here.
 def HomePage(request):
     return render(request, 'webapp/index.html')
@@ -36,7 +38,7 @@ def RegisterPage(request):
             user = form.save()
             # Log the user in after registration
             login(request, user)
-            success(request, "Account created successfully!")
+            messages.success(request, "Account created successfully!")
             return redirect('dashboard')
     else:
         form = CreateUserForm()
@@ -60,6 +62,8 @@ def LoginPage(request):
             if user is not None:
                 auth.login(request, user)
                 
+                messages.success(request, 'Login successful')
+                
                 return redirect('dashboard')
             
     context = {'form': form}
@@ -69,6 +73,8 @@ def LoginPage(request):
 
 def LogoutPage(request):
     auth.logout(request)
+    
+    messages.success(request, 'Logout successful')
     
     return redirect('home')
 
@@ -89,6 +95,7 @@ def CreateRecordPage(request):
         form = CreateRecordForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Create record successfully')
             return redirect('dashboard')
     else:
         form = CreateRecordForm()
@@ -108,7 +115,24 @@ def UpdateRecordPage(request, pk):
         
         if form.is_valid():
             form.save()
+            messages.success(request, 'Record updated successfully')
             return redirect('dashboard')
     context = {'form': form}
     
     return render(request, 'webapp/update-record.html', context=context)
+
+
+@login_required(login_url='login')
+def ViewRecordPage(request, pk):
+    all_records = Record.objects.get(id=pk)
+    context = {'record': all_records}
+    
+    return render(request, 'webapp/view-record.html', context=context)
+
+
+@login_required(login_url='login')
+def DeleteRecordPage(request, pk):
+    record = Record.objects.get(id=pk)
+    record.delete()
+    messages.warning(request, 'Record deleted successfully')
+    return redirect('dashboard')
