@@ -82,7 +82,7 @@ def LogoutPage(request):
 @login_required(login_url='login')
 def DashboardPage(request):
     
-    records = Record.objects.all()
+    records = Record.objects.filter(user=request.user)
     
     context = {'records': records}
     
@@ -94,7 +94,9 @@ def CreateRecordPage(request):
     if request.method == 'POST':
         form = CreateRecordForm(request.POST)
         if form.is_valid():
-            form.save()
+            record = form.save(commit=False)
+            record.user = request.user
+            record.save()
             messages.success(request, 'Create record successfully')
             return redirect('dashboard')
     else:
@@ -108,15 +110,38 @@ def CreateRecordPage(request):
 @login_required(login_url='login')
 def UpdateRecordPage(request, pk):
     record = Record.objects.get(id=pk)
-    form = UpdateRecordForm(instance=record)
+    # form = UpdateRecordForm(instance=record)
     
-    if request.method == 'POST':
-        form = UpdateRecordForm(request.POST, instance=record)
+    # if request.method == 'POST':
+    #     form = UpdateRecordForm(request.POST, instance=record)
         
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Record updated successfully')
-            return redirect('dashboard')
+    #     if form.is_valid():
+    #         form.save()
+    #         messages.success(request, 'Record updated successfully')
+    #         return redirect('dashboard')
+    # context = {'form': form}
+    
+    # return render(request, 'webapp/update-record.html', context=context)
+
+    # Get the record by its primary key
+    record = Record.objects.get(id=pk)
+    
+    # Check if the record belongs to the currently logged-in user
+    if record.user == request.user:
+        form = UpdateRecordForm(instance=record)
+        
+        if request.method == 'POST':
+            form = UpdateRecordForm(request.POST, instance=record)
+            
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Record updated successfully')
+                return redirect('dashboard')
+    else:
+        # Handle the case where the user is trying to update a record that doesn't belong to them
+        messages.error(request, "You don't have permission to update this record.")
+        return redirect('dashboard')
+
     context = {'form': form}
     
     return render(request, 'webapp/update-record.html', context=context)
@@ -124,15 +149,37 @@ def UpdateRecordPage(request, pk):
 
 @login_required(login_url='login')
 def ViewRecordPage(request, pk):
-    all_records = Record.objects.get(id=pk)
-    context = {'record': all_records}
+    # Get the record by its primary key
+    record = Record.objects.get(id=pk)
     
-    return render(request, 'webapp/view-record.html', context=context)
+    # Check if the record belongs to the currently logged-in user
+    if record.user == request.user:
+        context = {'record': record}
+        
+        return render(request, 'webapp/view-record.html', context=context)
+    else:
+        # Handle the case where the user is trying to view a record that doesn't belong to them
+        messages.error(request, "You don't have permission to view this record.")
+        return redirect('dashboard')
 
 
 @login_required(login_url='login')
 def DeleteRecordPage(request, pk):
+    # record = Record.objects.get(id=pk)
+    # record.delete()
+    # messages.warning(request, 'Record deleted successfully')
+    # return redirect('dashboard')
+    
+    
+    # Get the record by its primary key
     record = Record.objects.get(id=pk)
-    record.delete()
-    messages.warning(request, 'Record deleted successfully')
-    return redirect('dashboard')
+
+    # Check if the record belongs to the currently logged-in user
+    if record.user == request.user:
+        record.delete()
+        messages.success(request, 'Record deleted successfully')
+        return redirect('dashboard')
+    else:
+        # Handle the case where the user is trying to delete a record that doesn't belong to them
+        messages.error(request, "You don't have permission to delete this record.")
+        return redirect('dashboard')
